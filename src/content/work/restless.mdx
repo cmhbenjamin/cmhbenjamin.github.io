@@ -3,11 +3,71 @@ title: Restless
 fmContentType: page
 studio: Personal project
 releaseYear: 2026
-visible: false
-image: "../../assets/work/wish.jpg"
-description: "star fx"
+visible: true
+image: "../../assets/work/restless.jpg"
+description: "staff wave"
 order: 4
 ---
 
 
 line animation
+# Custom HDA
+## Copy Shape
+- for procedural animation
+- copy a customized bezier line to main curve
+- use a position hda for translation animation forward the height
+
+![offset_v002](/restless/offset.v002.png)
+```c
+
+v@center_p = point(1,"P",0); 
+f@center_u = point(1,"u",0);
+float width = ch("width");
+float height = ch("height");
+
+// use uvsample to sample the offset 
+// calculate the source uv from destination uv
+float remap_u = fit(@u,@center_u-(width*.5),@center_u+(width*.5), 0,1);
+vector offset = uvsample(2,"offset","uvw",set(remap_u,0,0));
+
+//calculate the ratio between the source line and the destination line 
+float remap_length = prim(0,"restlength",0)*width;
+float source_length = prim(2,"restlength",0);
+float width_mult = remap_length/source_length;
+
+// the center of staff
+v@center_rest = point(1,"rest",0); 
+// height of staff
+@staff_height = point(1,"staff_height",0); 
+// distance between the center of staff and animated position
+@y_diff =abs(v@rest.y-v@center_p.y);
+// calculate fade out from center
+float y_offset_mult = fit(abs(v@rest.y-v@center_p.y),0,@staff_height,1,0);
+y_offset_mult = fit(y_offset_mult,ch("y_fade_remap_min"),ch("y_fade_remap_max"),0,1);
+y_offset_mult = chramp("y_offset_mult_ramp",y_offset_mult);
+@y_offset_mult = y_offset_mult;
+
+// u fade soften edges
+float u_fade_dist = ch("u_fade_dist");
+float edge_range = fit(remap_u,0,u_fade_dist,0,1);
+float u_fade = chramp("u_fade",edge_range);
+edge_range = fit(remap_u,1-u_fade_dist,1,1,0);
+u_fade*= chramp("u_fade",edge_range);
+@u_fade = u_fade;
+
+@amp = point(1,"amp",0);
+v@offset_adj = offset*height*width_mult*y_offset_mult*u_fade;
+v@P+= v@offset_adj;
+```
+
+
+## pulse
+- cracking and trigger for ripple solver
+- trigger at frame
+- vibrato
+
+## Line thickness
+- activity mask
+- accumulate weight
+
+## Silent effects
