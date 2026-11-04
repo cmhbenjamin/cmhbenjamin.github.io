@@ -1,6 +1,7 @@
 {
   "name": "cmhben",
   "version": "1.0.0",
+  "packageManager": "pnpm@12.17.0",
   "description": "",
   "main": "index.js",
   "scripts": {
